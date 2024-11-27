@@ -165,37 +165,48 @@ defineExpose({ scaleChange, closePdfViewer, pdfDocument, scale: scale.value })
 </script>
 <style lang="scss" scoped>
 .mask {
-  position: fixed;
 
-  @media screen and (min-width: 768px) {
-    top: 39px;
-  }
-
-  @media screen and (max-width: 768px) {
-    top: 0;
-  }
-
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 99999;
-  overflow: auto;
-
-  .toolBar {
-    background-color: white;
-    position: fixed;
-    left: 0;
-    right: 0;
-    z-index: 1;
-
+  & {
     @media screen and (min-width: 768px) {
-      top: 0
+      top: 39px;
     }
 
     @media screen and (max-width: 768px) {
-      bottom: 0
+      top: 0;
     }
+  }
+
+  & {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99999;
+    overflow: auto;
+  }
+
+
+  .toolBar {
+    & {
+      @media screen and (min-width: 768px) {
+        top: 0
+      }
+
+      @media screen and (max-width: 768px) {
+        bottom: 0
+      }
+    }
+
+    & {
+      background-color: white;
+      position: fixed;
+      left: 0;
+      right: 0;
+      z-index: 1;
+    }
+
+
 
     .toolBar-item {
       display: flex;
