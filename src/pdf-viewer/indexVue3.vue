@@ -1,11 +1,12 @@
 <template>
   <div class="mask" v-if="visable">
-    <div class="toolBar" :style="`width:${innerWidth}px`">
-      <el-row :gutter="20" type="flex" justify="space-between">
+    <div class="toolBar" :style="{ width: `${innerWidth}px` }">
+      <el-row :gutter="20" type="flex" justify="space-between" v-if="componentType === 'Element Plus'">
         <el-col :span="6" class="toolBar-item">
           <span>缩放</span>
           <span>
-            <el-slider style="width: 200px;" v-model="scale" :step="0.1" @change="scaleChange" :max="3" :min="0.5">
+            <el-slider style="width: 200px;" v-model="scale" :step="scaleParams.step" @change="scaleChange"
+              :max="scaleParams.max" :min="scaleParams.min">
             </el-slider>
           </span>
         </el-col>
@@ -19,22 +20,39 @@
           <span> <el-button type="text" icon="el-icon-close" @click="closePdfViewer"></el-button></span>
         </el-col>
       </el-row>
+      <t-row :gutter="20" v-if="componentType === 'Tdesign Mobile Vue'">
+        <t-col :span="18" class="toolBar-item">
+          <!-- <span>缩放</span>
+          <span>
+            <t-slider style="width: 200px;" v-model="scale" :step="scaleParams.step" @change="scaleChange"
+              :max="scaleParams.max" :min="scaleParams.min" theme="capsule">
+            </t-slider>
+          </span> -->
+        </t-col>
+        <t-col :span="6" class="toolBar-item">
+          <span> <t-button variant="text" @click="closePdfViewer">x</t-button></span>
+        </t-col>
+      </t-row>
     </div>
     <div class="pdfViewerCanvasBox">
-      <div class="pdfViewer" v-if="pdfDocument">
-        <canvas v-for="pageIndex in pdfDocument.numPages" :id="`pdf-viewer-canvas-` + pageIndex" :key="pageIndex"
+      <div class="pdfViewer" v-if="numPages">
+        <canvas v-for="pageIndex in numPages" :id="`pdf-viewer-canvas-` + pageIndex" :key="pageIndex"
           draggable="true"></canvas>
       </div>
 
     </div>
+
   </div>
 </template>
 <script setup lang="ts">
-import { ref, watch, } from "vue";
+import { ref, watch } from "vue";
+import { MessageQueue } from "network-spanner"
 import * as pdfjsLib from 'pdfjs-dist';
-import * as PdfWorker from 'pdfjs-dist/build/pdf.worker.mjs'
-console.log(PdfWorker)
+import 'pdfjs-dist/build/pdf.worker.mjs'
+// import type { ComponentType } from "../types/componentType";
+const dpr = window.devicePixelRatio || 1;
 const innerWidth = ref(window.innerWidth)
+const ifMobile = innerWidth.value < 768
 // let pdfPath = "https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf";
 const props = defineProps({
   visable: {
@@ -44,11 +62,36 @@ const props = defineProps({
   path: {
     type: String,
     default: ""
+  },
+  componentType: {
+    type: String,
+    default: "Element Plus"
   }
 })
+const desktopParams = {
+  step: 0.1,
+  max: 3,
+  min: 0.5,
+  scale: 1.5
+}
+const mobileParams = {
+  step: 0.01,
+  max: 1,
+  min: 0.12,
+  scale: 2
+}
+let scaleParams: any = {}
+
+if (ifMobile) {
+  // 判断适配屏幕大小
+  scaleParams = { ...mobileParams };
+} else {
+  scaleParams = { ...desktopParams };
+}
 const emit = defineEmits(["update:visable"])
-const pdfDocument = ref(); // 保存加载的pdf文件流
-const scale = ref(1.5); //放大系数
+let pdfDocument: any = ""; // 保存加载的pdf文件流
+const numPages = ref(0); // 保存加载的pdf文件流
+const scale = ref(scaleParams.scale); //放大系数
 watch(
   () => props.visable,
   async (val) => {
@@ -63,38 +106,33 @@ const pdfLoader = async () => {
     console.warn("无pdf地址，请传入path", props.path)
     return
   }
-  if (typeof window !== "undefined" && "Worker" in window) {
-    console.warn("newworker")
-    pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(
-      PdfWorker
-    );
-  }
-  // Loading a document.
-
   const loadingTask = pdfjsLib.getDocument(props.path);
-  pdfDocument.value = await loadingTask.promise;
+  pdfDocument = await loadingTask.promise;
+  numPages.value = pdfDocument.numPages
 }
-const dpr = window.devicePixelRatio || 1;
 
 //渲染pdf文件
 const renderPage = async (num) => {
   // Request a first page
-  if (!pdfDocument.value?.getPage) {
-    console.warn("pdfDocument实例获取失败", pdfDocument.value)
+  if (!pdfDocument.getPage) {
+    console.warn("pdfDocument实例获取失败", pdfDocument)
     return
   }
-  const pdfPage = await pdfDocument.value.getPage(num);
+
+  const pdfPage = await pdfDocument.getPage(num);
   // Display page on the existing canvas with 100% scale.
   const viewport = pdfPage.getViewport({ scale: scale.value });
   const canvasId = 'pdf-viewer-canvas-' + num;
   const canvas: any = document.getElementById(canvasId);
-
   const ctx = canvas.getContext("2d");
   const bsr = ctx.webkitBackingStorePixelRatio || ctx.mozBackingStorePixelRatio || ctx.msBackingStorePixelRatio || ctx.oBackingStorePixelRatio || ctx.backingStorePixelRatio || 1;
   const ratio = dpr / bsr;
   canvas.width = viewport.width * ratio;
   canvas.height = viewport.height * ratio;
-  // canvas.style.width = `${screen.availWidth}px`
+  if (ifMobile) {
+    canvas.style.width = `${screen.availWidth}px`
+  }
+
   // // 缩放
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   // 【重要】关闭抗锯齿
@@ -110,7 +148,7 @@ const renderPage = async (num) => {
   // 异步加载
   // await renderTask.promise;
   // 加载全部
-  if (num < pdfDocument.value.numPages) {
+  if (num < numPages.value) {
     await renderPage(num + 1);
   }
   return
@@ -118,17 +156,25 @@ const renderPage = async (num) => {
 //放大缩小
 const scaleChange = (scaleVal) => {
   scale.value = scaleVal;
-  renderPage(1)
+  MessageQueue({ value: 1, somePromise: renderPage })
 }
 const closePdfViewer = (scaleVal) => {
   emit('update:visable', false)
 }
-defineExpose({ scaleChange, closePdfViewer, pdfDocument: pdfDocument.value, scale: scale.value })
+defineExpose({ scaleChange, closePdfViewer, pdfDocument, scale: scale.value })
 </script>
 <style lang="scss" scoped>
 .mask {
   position: fixed;
-  top: 39px;
+
+  @media screen and (min-width: 768px) {
+    top: 39px;
+  }
+
+  @media screen and (max-width: 768px) {
+    top: 0;
+  }
+
   left: 0;
   right: 0;
   bottom: 0;
@@ -139,9 +185,17 @@ defineExpose({ scaleChange, closePdfViewer, pdfDocument: pdfDocument.value, scal
   .toolBar {
     background-color: white;
     position: fixed;
-    top: 0;
     left: 0;
-    // right: 0;
+    right: 0;
+    z-index: 1;
+
+    @media screen and (min-width: 768px) {
+      top: 0
+    }
+
+    @media screen and (max-width: 768px) {
+      bottom: 0
+    }
 
     .toolBar-item {
       display: flex;

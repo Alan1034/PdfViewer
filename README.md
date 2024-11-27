@@ -10,9 +10,13 @@ import 'general-pdf-viewer/style'
 ```
 
 ```
-<VPdfViewer :visable.sync="pdfVisable" :path="pdfPath"></VPdfViewer>
+<VPdfViewer :visable.sync="pdfVisable"
+componentType="Tdesign Mobile Vue"
+:path="pdfPath"></VPdfViewer>
 ```
 
 visable：控制是否展示
 
 path：文件路径
+
+componentType: UI组件，支持Element Plus（默认）、Tdesign Mobile Vue

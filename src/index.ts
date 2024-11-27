@@ -8,7 +8,7 @@
  * @FilePath: \VueNpmFrame\src\index.ts
  * 
  */
-import PdfViewer from './pdf-viewer/index.vue';
+import PdfViewer from './pdf-viewer/indexVue3.vue';
 
 // 引入时需要解构的话用下面的写法
 export const VPdfViewer = PdfViewer
