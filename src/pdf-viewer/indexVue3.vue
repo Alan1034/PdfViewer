@@ -22,12 +22,12 @@
       </el-row>
       <t-row :gutter="20" v-if="componentType === 'Tdesign Mobile Vue'">
         <t-col :span="18" class="toolBar-item">
-          <!-- <span>缩放</span>
+          <span>缩放</span>
           <span>
             <t-slider style="width: 200px;" v-model="scale" :step="scaleParams.step" @change="scaleChange"
               :max="scaleParams.max" :min="scaleParams.min" theme="capsule">
             </t-slider>
-          </span> -->
+          </span>
         </t-col>
         <t-col :span="6" class="toolBar-item">
           <span> <t-button variant="text" @click="closePdfViewer">x</t-button></span>
