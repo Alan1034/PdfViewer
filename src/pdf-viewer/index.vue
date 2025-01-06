@@ -1,7 +1,7 @@
 <!--
  * @Author: 陈德立*******419287484@qq.com
  * @Date: 2024-11-06 19:09:30
- * @LastEditTime: 2024-11-06 21:04:07
+ * @LastEditTime: 2025-01-06 16:08:26
  * @LastEditors: 陈德立*******419287484@qq.com
  * @Github: https://github.com/Alan1034
  * @Description: 
@@ -26,7 +26,8 @@
           <div></div>
         </el-col>
         <el-col :span="6" class="toolBar-item">
-          <span> <el-button type="text" icon="el-icon-close" @click="closePdfViewer"></el-button></span>
+          <span> <el-button type="text" icon="el-icon-close" @click="closePdfViewer"
+              class="close-button"></el-button></span>
         </el-col>
       </el-row>
     </div>
@@ -154,6 +155,10 @@ export default {
       align-items: center;
       gap: 8px;
       font-size: 16px;
+      .close-button{
+        font-size: 21px;
+        padding: 8px;
+      }
     }
 
   }

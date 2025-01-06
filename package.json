@@ -51,6 +51,9 @@
     "vue": "^2.7.0-0"
   },
   "typings": "./dist/index.d.ts",
+  "dependencies": {
+    "pdfjs-dist": "^4.10.38"
+  },
   "module": "./dist/index.js",
   "exports": {
     ".": {
@@ -62,8 +65,5 @@
   },
   "files": [
     "/dist"
-  ],
-  "dependencies": {
-    "pdfjs-dist": "^4.8.69"
-  }
+  ]
 }
